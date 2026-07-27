@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+      version: green          # <--- Etiqueta de versión
+  template:
+    metadata:
+      labels:
+        app: webapp
+        version: green       # <--- Etiqueta de versión
+    spec:
+      containers:
+      - name: web
+        image: app:v2    # Tu imagen original
+        imagePullPolicy: Never

@@ -1,28 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-deployment
+  name: web-deployment-blue
 spec:
-  replicas: 6
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  replicas: 3
   selector:
     matchLabels:
       app: webapp
+      version: blue          # <--- Etiqueta de versión
   template:
     metadata:
       labels:
         app: webapp
+        version: blue        # <--- Etiqueta de versión
     spec:
       containers:
-        - name: web
-          image: app-reto1:latest
-          imagePullPolicy: Never
-          ports:
-            - containerPort: 8080
+      - name: web
+        image: app:latest    # Tu imagen original
+        imagePullPolicy: Never
 ---
 
 apiVersion: v1
@@ -32,6 +27,7 @@ metadata:
 spec:
   selector:
     app: webapp
+    version: blue
   ports:
     - port: 80
       targetPort: 8080
