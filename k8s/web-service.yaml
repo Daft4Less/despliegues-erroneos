@@ -18,6 +18,18 @@ spec:
       - name: web
         image: app:latest    # Tu imagen original
         imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000   # Asegúrate de que sea el puerto de tu app
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080  # Asegúrate de que sea el puerto de tu app
+          initialDelaySeconds: 5
+          periodSeconds: 10
 ---
 
 apiVersion: v1

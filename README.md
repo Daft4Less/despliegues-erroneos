@@ -72,6 +72,100 @@ git branch -M main
 git push -u origin main
 
 
+# 🛠️ Cheat Sheet de Supervivencia - Examen Práctico
+
+Esta sección contiene los comandos críticos para la evaluación práctica.
+
+## 1. Gestión de Minikube (Entorno Local)
+Si la consola arroja el error "target machine actively refused it", el clúster se apagó.
+* **Encender el clúster:** `minikube start`
+* **Ver el estado:** `minikube status`
+
+## 2. Maniobras de Kubernetes (K8s)
+* **Ver Pods en tiempo real (monitoreo):** `kubectl get pods -w`
+* **Aplicar cambios en un archivo YAML:** `kubectl apply -f <nombre-del-archivo>.yml`
+* **Verificar hacia dónde apunta un Service:** `kubectl describe service web-service`
+* **Simular la caída de un contenedor (Pregunta de almacenamiento efímero):** `kubectl delete pod <nombre-del-pod>`
+
+## 3. 🟢🔵 Ejecución del Blue-Green Deployment
+Para desviar el tráfico de la versión antigua a la nueva con "cero interrupciones":
+1. Abre `web-service.yml`.
+2. Cambia la línea del selector de `version: blue` a `version: green`.
+3. Ejecuta: `kubectl apply -f web-service.yml`
+4. Revisa que el cambio funcionó con: `kubectl describe service web-service` (el Selector debe decir green).
+
+## 4. 🚑 Emergencias de Git (Error de Protocolo)
+Si al hacer `git push` la terminal lanza un error de protocolo de conexión, el remote URL está mal configurado.
+* **Verificar la URL actual:** `git remote -v`
+* **Eliminar la configuración incorrecta:** `git remote remove origin`
+* **Agregar la URL correcta (ejemplo por HTTPS):** `git remote add origin https://github.com/TU_USUARIO/inventario-app.git`
+* **Volver a subir los cambios:** `git push -u origin main`
+
+
+## 5. 🔄 El Plan B: Rolling Update
+Si la rúbrica o el profesor te pide escalar la aplicación o reiniciarla progresivamente sin usar Blue-Green:
+* **Escalar los Pods manualmente:** `kubectl scale deployment web-deployment --replicas=6`
+* **Forzar una actualización en caliente (Zero-Downtime):** `kubectl rollout restart deployment web-deployment`
+* **Ver el estado de la actualización en vivo:** `kubectl rollout status deployment web-deployment`
+
+## 6. 🐳 Supervivencia con Docker Local
+Si te piden probar la imagen en tu computadora antes de subirla al clúster:
+* **Construir la imagen:** `docker build -t app:latest .`
+* **Correr el contenedor localmente:** `docker run -d -p 3000:3000 app:latest`
+* **Ver contenedores activos:** `docker ps`
+* **Detener un contenedor:** `docker stop <ID_DEL_CONTENEDOR>`
+
+## 7. 🩺 Pruebas de Salud (Probes)
+Si te dan un archivo incompleto y te piden que Kubernetes verifique si la aplicación "está viva", este es el fragmento exacto que debes agregar dentro de la especificación de tu contenedor en el Deployment:
+
+```yaml
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+
+
+## 8. 🌐 Exponer la Web (Ver la aplicación en vivo)
+
+### Opción A: A través de Minikube (El Clúster de K8s)
+Usa estos comandos cuando tus Pods ya estén en estado `Running`:
+
+* **Abrir automáticamente en el navegador:** 
+  `minikube service web-service`
+* **Obtener la URL para hacer pruebas en consola:** 
+  `minikube service web-service --url`
+* **Testear los endpoints con curl (Requisito de rúbrica):**
+  `curl <URL_GENERADA>/health`
+  `curl <URL_GENERADA>/api/products`
+
+> ⚠️ **Emergencia de Red (Plan B):** Si el comando anterior se queda colgado o no abre la ventana, usa el reenvío de puertos directo:
+> `kubectl port-forward service/web-service 8080:80`
+> *(Deja la consola abierta y entra en tu navegador a `http://localhost:8080`)*.
+
+---
+
+### Opción B: A través de Docker Local (Sin Kubernetes)
+Usa estos comandos si necesitas probar que la imagen de tu contenedor funciona de forma aislada antes de subirla al clúster:
+
+* **Construir la imagen localmente:** 
+  `docker build -t app:latest .`
+* **Ejecutar el contenedor y enlazar el puerto:** 
+  `docker run -d -p 3000:3000 app:latest`
+* **Verificar que está corriendo:**
+  Abre tu navegador web y entra a `http://localhost:3000`.
+* **Apagar el contenedor de prueba:**
+  1. `docker ps` (Para copiar el CONTAINER ID)
+  2. `docker stop <CONTAINER_ID>`
+
 # hoja de vida de tu codigo inicial
 
 # inventario-app
@@ -122,3 +216,5 @@ npm test
 | `APP_COLOR` | `blue` | Color del encabezado — útil para distinguir versiones en un despliegue. |
 | `SIMULATE_FAILURE` | `false` | Si es `true`, `/health` responde siempre `500`. |
 | `DB_PATH` | `./data/products.json` | Ruta del archivo de base de datos local. |
+
+
