@@ -13,6 +13,14 @@ jobs:
     needs: build-test
     runs-on: ubuntu-latest
     steps:
-      - run: docker build -t app:${{ github.sha }} .
-      - run: docker push registry/app:${{ github.sha }}
-      - run: kubectl set image deployment/web-deployment web registry/app:${{ github.sha }}
+      # Paso crucial: clonar el código en este nuevo job para que Docker encuentre el Dockerfile
+      - uses: actions/checkout@v4 
+      
+      - name: Construir la imagen de Docker
+        run: docker build -t app:${{ github.sha }} .
+        
+      - name: Simular push al Container Registry
+        run: echo "Simulando la subida de la imagen app:${{ github.sha }} a nuestro Registry de producción..."
+        
+      - name: Simular despliegue en Kubernetes (Minikube local)
+        run: echo "Simulando comando 'kubectl set image deployment/web-deployment web registry/app:${{ github.sha }}'..."
